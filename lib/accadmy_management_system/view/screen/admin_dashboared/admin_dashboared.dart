@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:folding_cell/folding_cell/widget.dart';
 import '../../../model/admin_model/admin_model.dart';
 import '../../../services/admin_dashboared_service/admin_dashboared_service.dart';
-
 class FeeManagementScreen extends StatelessWidget {
   FeeManagementScreen({Key? key}) : super(key: key);
   final AdminServiceData _service = AdminServiceData();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

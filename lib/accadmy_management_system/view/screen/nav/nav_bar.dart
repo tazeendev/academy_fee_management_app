@@ -1,3 +1,5 @@
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../admin_dashboared/admin_dashboared.dart';
@@ -6,19 +8,18 @@ import '../admin_dashboared/student_screen.dart';
 
 class AdminNavScreen extends StatefulWidget {
   const AdminNavScreen({Key? key}) : super(key: key);
-
   @override
   State<AdminNavScreen> createState() => _AdminNavScreenState();
 }
 
 class _AdminNavScreenState extends State<AdminNavScreen> {
-  int _currentIndex = 0;
+  int currentIndex = 0;
 
   // Screens
   final List<Widget> _screens = [
-    FeeManagementScreen(),
     CoursesScreen(),
     StudentsScreen(),
+    FeeManagementScreen(),
   ];
 
   // Titles for AppBar
@@ -32,22 +33,22 @@ class _AdminNavScreenState extends State<AdminNavScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_currentIndex]),
+        title: Text(_titles[currentIndex]),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         selectedItemColor: Colors.blue.shade700,
         unselectedItemColor: Colors.grey,
         onTap: (index) {
           setState(() {
-            _currentIndex = index;
+            currentIndex = index;
           });
         },
         items: const [
