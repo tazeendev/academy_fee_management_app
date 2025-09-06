@@ -1,59 +1,33 @@
 import 'package:flutter/material.dart';
-
-import '../admin_dashboared/admin_dashboared.dart';
-import '../admin_dashboared/course_screen.dart';
-import '../admin_dashboared/student_screen.dart';
-
+import '../admin_dashboared/courses_screen/course_screen.dart';
+import '../admin_dashboared/fee_details_screen/fee_details_screen.dart';
+import '../admin_dashboared/student_list_screen/student_screen.dart';
 class AdminNavScreen extends StatefulWidget {
-  const AdminNavScreen({Key? key}) : super(key: key);
-
+  const AdminNavScreen({Key? key});
   @override
   State<AdminNavScreen> createState() => _AdminNavScreenState();
 }
-
 class _AdminNavScreenState extends State<AdminNavScreen> {
   int currentIndex = 0;
-
-  // Screens
-  final List<Widget> _screens = [
-    FeeManagementScreen(),
+  final List<Widget> screens = [
     CoursesScreen(),
     StudentsScreen(),
-  ];
-
-  // Titles for AppBar
-  final List<String> _titles = [
-    'Fee Management',
-    'Courses',
-    'Students',
+    FeeScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          _titles[currentIndex],
-          style: TextStyle(
-            color: theme.appBarTheme.foregroundColor ?? theme.colorScheme.onSurface,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-        elevation: 0,
-      ),
       body: IndexedStack(
         index: currentIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
-        selectedItemColor: theme.colorScheme.primary,
-        unselectedItemColor: theme.colorScheme.onSurface.withOpacity(0.6),
-        backgroundColor: theme.bottomNavigationBarTheme.backgroundColor ??
-            theme.colorScheme.surface,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.blue,
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
         onTap: (index) {
           setState(() {
             currentIndex = index;
@@ -61,16 +35,16 @@ class _AdminNavScreenState extends State<AdminNavScreen> {
         },
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.payment),
-            label: 'Fees',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.book),
             label: 'Courses',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
             label: 'Students',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.payment),
+            label: 'Fees',
           ),
         ],
       ),

@@ -1,20 +1,15 @@
 import 'package:firebase_app/accadmy_management_system/view/widget/onboarding_widget/onboarding_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-
-import '../auth_screens/login_screen.dart';
-
+import '../auth_screens/login_screen/login_screen.dart';
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
-
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
-
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController controller = PageController();
   bool isLastPage = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,28 +26,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 OnboardingPage(
                   image: 'assets/images/pic1.jpeg',
                   title: 'Welcome to Academy Fee Manager',
-                  subtitle:
+                  des:
                   'A smarter way to manage your academy’s student fees and records',
                 ),
                 OnboardingPage(
                   image: 'assets/images/pic2.jpeg',
                   title: 'Track Fees Easily',
-                  subtitle:
+                  des:
                   'Keep fee records organized with just a few taps — no paperwork, no stress',
                 ),
                 OnboardingPage(
                   image: 'assets/images/pic3.jpeg',
                   title: 'Stay Organized & Save Time',
-                  subtitle:
+                  des:
                   'Focus on learning while we handle your fee management seamlessly',
                 ),
               ],
             ),
           ),
-
-          // Dots + Buttons
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding:EdgeInsets.all(16.0),
             child: Column(
               children: [
                 SmoothPageIndicator(
@@ -64,9 +57,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     dotWidth: 10,
                   ),
                 ),
-                const SizedBox(height: 20),
-
-                // If last page → Center button only
+                 SizedBox(height: 20),
                 if (isLastPage)
                   Center(
                     child: GestureDetector(
