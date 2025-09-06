@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import '../admin_dashboared/courses_screen/course_screen.dart';
 import '../admin_dashboared/fee_details_screen/fee_details_screen.dart';
 import '../admin_dashboared/student_list_screen/student_screen.dart';
-class AdminNavScreen extends StatefulWidget {
-  const AdminNavScreen({Key? key});
+class NavScreen extends StatefulWidget {
+  const NavScreen({Key? key});
   @override
-  State<AdminNavScreen> createState() => _AdminNavScreenState();
+  State<NavScreen> createState() => _NavScreenState();
 }
-class _AdminNavScreenState extends State<AdminNavScreen> {
+class _NavScreenState extends State<NavScreen> {
   int currentIndex = 0;
   final List<Widget> screens = [
     CoursesScreen(),
     StudentsScreen(),
     FeeScreen(),
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +32,7 @@ class _AdminNavScreenState extends State<AdminNavScreen> {
             currentIndex = index;
           });
         },
-        items: const [
+        items:  [
           BottomNavigationBarItem(
             icon: Icon(Icons.book),
             label: 'Courses',

@@ -1,8 +1,8 @@
+import 'package:firebase_app/accadmy_management_system/view/screen/starting_screen/starting_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'accadmy_management_system/view/screen/nav/nav_bar.dart';
-import 'accadmy_management_system/view/screen/starting_screen/starting_screen.dart';
 import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,8 +23,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
     //
-      home:AdminNavScreen() ,
-      //SplashScreen(),
+      home:SplashScreen(),
+      //NavScreen() ,
     );
 
   }
