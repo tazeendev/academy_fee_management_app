@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import '../admin_dashboared/admin_dashboared.dart';
 import '../admin_dashboared/course_screen.dart';
 import '../admin_dashboared/student_screen.dart';
-
 class AdminNavScreen extends StatefulWidget {
   const AdminNavScreen({Key? key}) : super(key: key);
   @override
