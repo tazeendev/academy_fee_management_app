@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import 'accadmy_management_system/services/admin_dashboared_service/admin_dashboared_service.dart';
 import 'accadmy_management_system/view/screen/nav/nav_bar.dart';
+import 'accadmy_management_system/view/screen/starting_screen/starting_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -45,10 +46,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
     //
-      home:AdminNavScreen(),
-      //AdminNavScreen(),
-     // StartingScreen(),
-      //AddStudentScreen(),
+      home:SplashScreen(),
     );
 
   }
