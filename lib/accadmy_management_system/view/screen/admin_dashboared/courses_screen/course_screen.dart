@@ -1,28 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:folding_cell/folding_cell.dart';
 class CoursesScreen extends StatefulWidget {
-  const CoursesScreen({Key? key}) : super(key: key);
-
+  const CoursesScreen({Key? key});
   @override
   State<CoursesScreen> createState() => _CoursesScreenState();
 }
-
 class _CoursesScreenState extends State<CoursesScreen> {
   final _firestore = FirebaseFirestore.instance;
-
+  final List<GlobalKey<SimpleFoldingCellState>> cellKeys = [];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
           "Courses",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold,color: Colors.white,fontSize: 30),
         ),
         centerTitle: true,
         backgroundColor: Colors.blue.shade800,
-        elevation: 2,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('courses').snapshots(),
@@ -35,42 +32,37 @@ class _CoursesScreenState extends State<CoursesScreen> {
           }
 
           final courses = snapshot.data!.docs;
-
           if (courses.isEmpty) {
             return const Center(child: Text("No Courses Found"));
           }
 
+          // Make sure we have keys for each card
+          while (_cellKeys.length < courses.length) {
+            _cellKeys.add(GlobalKey<SimpleFoldingCellState>());
+          }
+
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.all(16),
             itemCount: courses.length,
             itemBuilder: (context, index) {
               final doc = courses[index];
               final data = doc.data() as Map<String, dynamic>;
-              return Card(
-                margin:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
-                  title: Text(
-                    data['name'] ?? '',
-                    style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600, fontSize: 16),
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: SimpleFoldingCell.create(
+                  key: _cellKeys[index],
+                  frontWidget: GestureDetector(
+                    onTap: () {
+                      _cellKeys[index].currentState?.toggleFold();
+                    },
+                    child: _buildFrontCard(data, index),
                   ),
-                  subtitle: Text(
-                    data['description'] ?? '',
-                    style: GoogleFonts.poppins(fontSize: 14),
-                  ),
-                  trailing: Text(
-                    "PKR ${data['fee']?.toStringAsFixed(2) ?? '0.00'}",
-                    style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w500, color: Colors.green),
-                  ),
-                  onTap: () => _showOptions(doc.id, data),
+                  innerWidget: _buildInnerCard(doc.id, data, index),
+                  cellSize: Size(MediaQuery.of(context).size.width, 150),
+                  padding: EdgeInsets.zero,
+                  animationDuration: const Duration(milliseconds: 300),
+                  borderRadius: 15,
                 ),
               );
             },
@@ -85,7 +77,93 @@ class _CoursesScreenState extends State<CoursesScreen> {
     );
   }
 
-  // ---------------- ADD COURSE ----------------
+  // FRONT CARD
+  Widget _buildFrontCard(Map<String, dynamic> data, int index) {
+    return GestureDetector(
+      onTap: () {
+        _cellKeys[index].currentState?.toggleFold();
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade700, Colors.blue.shade400],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                data['name'] ?? 'Course',
+                style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+            Text(
+              "PKR ${data['fee']?.toStringAsFixed(2) ?? '0.00'}",
+              style: GoogleFonts.poppins(
+                  color: Colors.green.shade200,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // INNER CARD
+  Widget _buildInnerCard(String id, Map<String, dynamic> data, int index) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            data['name'] ?? '',
+            style:
+            GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            data['description'] ?? '',
+            style: GoogleFonts.poppins(fontSize: 15),
+          ),
+          const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
+                onPressed: () {
+                  _cellKeys[index].currentState?.toggleFold();
+                },
+                child: const Text("Close"),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+                onPressed: () => _showOptions(id, data),
+                icon: const Icon(Icons.edit, size: 18),
+                label: const Text("Options"),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------- ADD, UPDATE, DELETE ----------------
   void showAddDialog() {
     final nameController = TextEditingController();
     final descController = TextEditingController();
@@ -97,50 +175,34 @@ class _CoursesScreenState extends State<CoursesScreen> {
         title: const Text("Add Course"),
         content: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nameController,
-                decoration: const InputDecoration(
-                  labelText: "Course Name",
-                  hintText: "Enter course name",
-                ),
-                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(labelText: "Course Name"),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: descController,
-                decoration: const InputDecoration(
-                  labelText: "Description",
-                  hintText: "Enter course description",
-                ),
-                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(labelText: "Description"),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: feeController,
-                decoration: const InputDecoration(
-                  labelText: "Fee",
-                  hintText: "Enter course fee",
-                ),
+                decoration: const InputDecoration(labelText: "Fee"),
                 keyboardType: TextInputType.number,
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
           ElevatedButton(
             onPressed: () async {
               if (nameController.text.isEmpty ||
                   descController.text.isEmpty ||
                   feeController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                      content: Text("Please fill all fields")),
-                );
+                    const SnackBar(content: Text("Please fill all fields")));
                 return;
               }
               await _firestore.collection('courses').add({
@@ -157,7 +219,6 @@ class _CoursesScreenState extends State<CoursesScreen> {
     );
   }
 
-  // ---------------- UPDATE & DELETE ----------------
   void _showOptions(String id, Map<String, dynamic> data) {
     showDialog(
       context: context,
@@ -195,39 +256,23 @@ class _CoursesScreenState extends State<CoursesScreen> {
         title: const Text("Update Course"),
         content: SingleChildScrollView(
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: "Course Name"),
-                textInputAction: TextInputAction.next,
-              ),
+              TextField(controller: nameController, decoration: const InputDecoration(labelText: "Course Name")),
               const SizedBox(height: 10),
-              TextField(
-                controller: descController,
-                decoration: const InputDecoration(labelText: "Description"),
-                textInputAction: TextInputAction.next,
-              ),
+              TextField(controller: descController, decoration: const InputDecoration(labelText: "Description")),
               const SizedBox(height: 10),
-              TextField(
-                controller: feeController,
-                decoration: const InputDecoration(labelText: "Fee"),
-                keyboardType: TextInputType.number,
-              ),
+              TextField(controller: feeController, decoration: const InputDecoration(labelText: "Fee"), keyboardType: TextInputType.number),
             ],
           ),
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
           ElevatedButton(
             onPressed: () async {
               await _firestore.collection('courses').doc(id).update({
                 'name': nameController.text,
                 'description': descController.text,
-                'fee': double.tryParse(feeController.text) ??
-                    data['fee'],
+                'fee': double.tryParse(feeController.text) ?? data['fee'],
               });
               Navigator.pop(context);
             },
@@ -245,9 +290,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
         title: const Text("Delete Course"),
         content: Text("Are you sure you want to delete '$name'?"),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancel")),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
