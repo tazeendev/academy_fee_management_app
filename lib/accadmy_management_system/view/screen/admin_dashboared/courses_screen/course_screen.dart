@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:folding_cell/folding_cell.dart';
+
 class CoursesScreen extends StatefulWidget {
-  const CoursesScreen({Key? key});
+  const CoursesScreen({Key? key}) : super(key: key);
+
   @override
   State<CoursesScreen> createState() => _CoursesScreenState();
 }
@@ -16,10 +18,15 @@ class _CoursesScreenState extends State<CoursesScreen> {
       appBar: AppBar(
         title: Text(
           "Courses",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold,color: Colors.white,fontSize: 30),
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            fontSize: 28,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.blue.shade800,
+        elevation: 2,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('courses').snapshots(),
@@ -36,9 +43,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
             return const Center(child: Text("No Courses Found"));
           }
 
-          // Make sure we have keys for each card
-          while (_cellKeys.length < courses.length) {
-            _cellKeys.add(GlobalKey<SimpleFoldingCellState>());
+          // Ensure a key for each card
+          while (cellKeys.length < courses.length) {
+            cellKeys.add(GlobalKey<SimpleFoldingCellState>());
           }
 
           return ListView.builder(
@@ -51,13 +58,8 @@ class _CoursesScreenState extends State<CoursesScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: SimpleFoldingCell.create(
-                  key: _cellKeys[index],
-                  frontWidget: GestureDetector(
-                    onTap: () {
-                      _cellKeys[index].currentState?.toggleFold();
-                    },
-                    child: _buildFrontCard(data, index),
-                  ),
+                  key: cellKeys[index],
+                  frontWidget: _buildFrontCard(data, index),
                   innerWidget: _buildInnerCard(doc.id, data, index),
                   cellSize: Size(MediaQuery.of(context).size.width, 150),
                   padding: EdgeInsets.zero,
@@ -80,9 +82,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
   // FRONT CARD
   Widget _buildFrontCard(Map<String, dynamic> data, int index) {
     return GestureDetector(
-      onTap: () {
-        _cellKeys[index].currentState?.toggleFold();
-      },
+      onTap: () => cellKeys[index].currentState?.toggleFold(),
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -91,6 +91,13 @@ class _CoursesScreenState extends State<CoursesScreen> {
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 6,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
         padding: const EdgeInsets.all(16),
         child: Row(
@@ -100,17 +107,19 @@ class _CoursesScreenState extends State<CoursesScreen> {
               child: Text(
                 data['name'] ?? 'Course',
                 style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold),
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             Text(
               "PKR ${data['fee']?.toStringAsFixed(2) ?? '0.00'}",
               style: GoogleFonts.poppins(
-                  color: Colors.green.shade200,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16),
+                color: Colors.green.shade200,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
             ),
           ],
         ),
@@ -120,50 +129,51 @@ class _CoursesScreenState extends State<CoursesScreen> {
 
   // INNER CARD
   Widget _buildInnerCard(String id, Map<String, dynamic> data, int index) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            data['name'] ?? '',
-            style:
-            GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            data['description'] ?? '',
-            style: GoogleFonts.poppins(fontSize: 15),
-          ),
-          const Spacer(),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                onPressed: () {
-                  _cellKeys[index].currentState?.toggleFold();
-                },
-                child: const Text("Close"),
-              ),
-              ElevatedButton.icon(
+    return GestureDetector(
+      onTap: () => cellKeys[index].currentState?.toggleFold(),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              data['name'] ?? '',
+              style:
+              GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              data['description'] ?? '',
+              style: GoogleFonts.poppins(fontSize: 15),
+            ),
+            const Spacer(),
+            Align(
+              alignment: Alignment.bottomRight,
+              child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
                 onPressed: () => _showOptions(id, data),
                 icon: const Icon(Icons.edit, size: 18),
                 label: const Text("Options"),
               ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // ---------------- ADD, UPDATE, DELETE ----------------
+  // ---------------- ADD COURSE ----------------
   void showAddDialog() {
     final nameController = TextEditingController();
     final descController = TextEditingController();
@@ -219,6 +229,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
     );
   }
 
+  // ---------------- UPDATE & DELETE ----------------
   void _showOptions(String id, Map<String, dynamic> data) {
     showDialog(
       context: context,
