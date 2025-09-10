@@ -143,6 +143,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                     'name': nameController.text,
                     'courseId': courseController.text,
                     'contact': contactController.text,
+                    'timestamp': FieldValue.serverTimestamp(), // Added timestamp
                   });
                   Navigator.pop(context);
                 } catch (e) {
@@ -268,6 +269,8 @@ class StudentFoldingCard extends StatelessWidget {
                 style: GoogleFonts.poppins()),
             Text('Contact: ${data['contact'] ?? ''}',
                 style: GoogleFonts.poppins()),
+            Text('Added: ${data['timestamp']?.toDate().toString() ?? ''}', // Display timestamp
+                style: GoogleFonts.poppins()),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -368,6 +371,7 @@ class StudentFoldingCard extends StatelessWidget {
                     'name': nameController.text,
                     'courseId': courseController.text,
                     'contact': contactController.text,
+                    'timestamp': FieldValue.serverTimestamp(), // Updated timestamp
                   });
                   Navigator.pop(context);
                 } catch (e) {
