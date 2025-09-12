@@ -1,12 +1,17 @@
 import 'package:firebase_app/accadmy_management_system/view/screen/admin_dashboared/courses_screen/course_screen.dart';
-import 'package:firebase_app/accadmy_management_system/view/screen/admin_dashboared/fee_details_screen/fee_details_screen.dart';
+import 'package:firebase_app/accadmy_management_system/view/screen/admin_dashboared/fee_detail_screen/fee_details_screen.dart';
 import 'package:firebase_app/accadmy_management_system/view/screen/admin_dashboared/student_list_screen/student_screen.dart';
 import 'package:flutter/material.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   final String courseId;
-  final studentId;
-  const StudentDashboardScreen({super.key, required this.courseId, this.studentId});
+  final String? studentId; // make nullable
+
+  const StudentDashboardScreen({
+    super.key,
+    required this.courseId,
+    this.studentId,
+  });
 
   @override
   State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
@@ -32,14 +37,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             children: [
               ClipPath(
                 clipper: RoundedBottomClipper(),
-                child: Container(height: 200, color: Color(0xFF0D47A1)),
+                child: Container(height: 200, color: const Color(0xFF0D47A1)),
               ),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 40),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
                 child: Row(
-                  children: [
+                  children: const [
                     Text(
-                      'Fee Mangament ',
+                      'Fee Management',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 22,
@@ -49,7 +54,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   ],
                 ),
               ),
-
               Positioned(
                 bottom: -60,
                 left: 0,
@@ -58,7 +62,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   height: 150,
                   child: PageView(
                     controller: pageController,
-                    children: [
+                    children: const [
                       BannerCard('assets/images/banner1.jpeg', 'Announcements'),
                       BannerCard('assets/images/banner2.jpeg', 'Events'),
                     ],
@@ -67,26 +71,30 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ),
             ],
           ),
-          SizedBox(height: 80),
+          const SizedBox(height: 80),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
               child: GridView.count(
                 crossAxisCount: 2,
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.2,
                 children: [
-                  buildCard(Icons.book, 'Syllabus', CoursesScreen()),
+                  buildCard(Icons.book, 'Syllabus', const CoursesScreen()),
                   buildCard(
                     Icons.calendar_today,
                     'Attendance',
-                    StudentScreen(courseId: widget.courseId,),
+                    StudentScreen(courseId: widget.courseId),
                   ),
-                  buildCard(Icons.bar_chart, 'Result', FeeDetailsScreen()),
+                  buildCard(
+                    Icons.bar_chart,
+                    'Result',
+                    FeeDetailsScreen(
+                      courseId: widget.courseId,
+                      studentId: widget.studentId?? '', // safely nullable
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -158,7 +166,15 @@ class BannerCard extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(image, height: 60, width: 60),
+          // Safely load image
+          Image.asset(
+            image,
+            height: 60,
+            width: 60,
+            errorBuilder: (context, error, stackTrace) {
+              return const Icon(Icons.broken_image, size: 60, color: Colors.grey);
+            },
+          ),
           const SizedBox(height: 8),
           Text(
             title,
@@ -174,18 +190,13 @@ class BannerCard extends StatelessWidget {
 class RoundedBottomClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
-    double radius = 30;
+    const double radius = 30;
     Path path = Path();
     path.moveTo(0, 0);
     path.lineTo(0, size.height - radius);
     path.quadraticBezierTo(0, size.height, radius, size.height);
     path.lineTo(size.width - radius, size.height);
-    path.quadraticBezierTo(
-      size.width,
-      size.height,
-      size.width,
-      size.height - radius,
-    );
+    path.quadraticBezierTo(size.width, size.height, size.width, size.height - radius);
     path.lineTo(size.width, 0);
     path.close();
     return path;

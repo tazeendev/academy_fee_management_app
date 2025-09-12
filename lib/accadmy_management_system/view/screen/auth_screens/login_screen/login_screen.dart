@@ -2,16 +2,15 @@ import 'package:firebase_app/accadmy_management_system/view/screen/nav/nav_bar.d
 import 'package:firebase_app/accadmy_management_system/view/widget/form-feilds/text_form_feilds.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../signup_screen/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
+  final String courseId;
+  final String studentId;
+  const LoginScreen({super.key, required this.courseId, required this.studentId});
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
-
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -39,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => NavScreen()),
+        MaterialPageRoute(builder: (context) => NavScreen(Id1:widget.studentId , Id2: widget.courseId)),
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -142,7 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => SignupScreen()),
+                          MaterialPageRoute(builder: (context) => SignupScreen(courseId:
+                          widget.courseId,studentId: widget.studentId,)),
                         );
                       },
                       child: const Text(

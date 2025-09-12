@@ -1,4 +1,5 @@
 import 'package:firebase_app/accadmy_management_system/view/widget/form-feilds/text_form_feilds.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -71,7 +72,6 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                 setState(() => isLoading = true);
 
                 final id = DateTime.now().millisecondsSinceEpoch.toString();
-
                 try {
                   await _firestore.collection("courses").doc(id).set({
                     "name": nameController.text,

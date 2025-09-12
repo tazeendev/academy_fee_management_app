@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import '../onboarding_screen/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final String courseId;
+  final String studentId;
+  const SplashScreen({super.key, required this.courseId, required this.studentId});
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -18,12 +20,15 @@ class _SplashScreenState extends State<SplashScreen> {
       if (FirebaseAuth.instance.currentUser == null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>OnboardingScreen()),
+          MaterialPageRoute(builder: (context)
+          =>
+              OnboardingScreen(courseId: widget.courseId,studentId: widget.studentId,)),
         );
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>NavScreen()),
+          MaterialPageRoute(builder: (context) =>
+              NavScreen(Id1: widget.courseId, Id2:widget.studentId)),
         );
       }
     });
@@ -31,11 +36,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/splash.jpeg', width: 150, height: 150),
+            Image.asset('assets/images/splash.jpeg',fit: BoxFit.cover, width: 150, height: 150),
             SizedBox(height: 20),
             Text(
               'Welcome to My App',

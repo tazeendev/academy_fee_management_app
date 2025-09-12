@@ -1,9 +1,12 @@
+import 'package:firebase_app/accadmy_management_system/view/screen/auth_screens/signup_screen/signup_screen.dart';
 import 'package:firebase_app/accadmy_management_system/view/widget/onboarding_widget/onboarding_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../auth_screens/login_screen/login_screen.dart';
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+  final String courseId;
+  final String studentId;
+  const OnboardingScreen({super.key, required this.courseId, required this.studentId});
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
@@ -52,7 +55,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   controller: controller,
                   count: 3,
                   effect: const ExpandingDotsEffect(
-                    activeDotColor: Colors.blue,
+                    activeDotColor: Color(0xFF0D47A1),
                     dotHeight: 10,
                     dotWidth: 10,
                   ),
@@ -62,7 +65,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   Center(
                     child: GestureDetector(
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+                        Navigator.push(context, MaterialPageRoute(builder:
+                            (context)=>SignupScreen(courseId: widget.courseId,studentId: widget.studentId,)));
                         print("Get Started Clicked");
                         // Navigate to dashboard/login here
                       },
@@ -103,8 +107,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         ),
                       ),
-
-                      // Next Button
                       GestureDetector(
                         onTap: () {
                           controller.nextPage(
@@ -116,7 +118,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 40, vertical: 10),
                           decoration: BoxDecoration(
-                            color: Colors.blue,
+                            color:Color(0xFF0D47A1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text(

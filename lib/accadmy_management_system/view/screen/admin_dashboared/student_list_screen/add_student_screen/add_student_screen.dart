@@ -12,7 +12,6 @@ class AddStudentScreen extends StatefulWidget {
   @override
   State<AddStudentScreen> createState() => _AddStudentScreenState();
 }
-
 class _AddStudentScreenState extends State<AddStudentScreen> {
   final nameController = TextEditingController();
   final fatherNameController = TextEditingController();
@@ -56,9 +55,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         'email': emailController.text,
         'phone': phoneController.text,
         'address': addressController.text,
-        'createdAt': FieldValue.serverTimestamp(),
-        'createdBy': FirebaseAuth.instance.currentUser?.uid,
-      });
+        });
 
       Navigator.pop(context, true); // return success
     } catch (e) {

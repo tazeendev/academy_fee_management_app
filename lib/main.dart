@@ -10,11 +10,13 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(MyApp(courseId: '123', studentId: 'hello1',));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String courseId;
+  final String studentId;
+  const MyApp({super.key, required this.courseId, required this.studentId});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
     //
       home://NavScreen(),
       //StudentDashboardScreen(),
-      SplashScreen(),
+      SplashScreen(courseId: courseId,studentId: studentId,),
       //NavScreen() ,
     );
 

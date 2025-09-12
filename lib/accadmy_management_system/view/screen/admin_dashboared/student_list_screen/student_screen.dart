@@ -160,13 +160,37 @@ class _StudentScreenState extends State<StudentScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              data['name'] ?? '',
-              style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold, fontSize: 18),
+              "Name: ${data['name'] ?? '-'}",
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 18),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 6),
             Text(
-              data['description'] ?? '',
+              "Father Name: ${data['fname'] ?? '-'}",
+              style: GoogleFonts.poppins(fontSize: 15),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Intro: ${data['intro'] ?? '-'}",
+              style: GoogleFonts.poppins(fontSize: 15),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Course: ${data['course'] ?? '-'}",
+              style: GoogleFonts.poppins(fontSize: 15),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Email: ${data['email'] ?? '-'}",
+              style: GoogleFonts.poppins(fontSize: 15),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Phone: ${data['phone'] ?? '-'}",
+              style: GoogleFonts.poppins(fontSize: 15),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Address: ${data['address'] ?? '-'}",
               style: GoogleFonts.poppins(fontSize: 15),
             ),
             const Spacer(),

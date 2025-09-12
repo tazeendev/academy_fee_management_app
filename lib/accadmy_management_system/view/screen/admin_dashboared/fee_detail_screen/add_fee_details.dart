@@ -1,12 +1,19 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../widget/form-feilds/text_form_feilds.dart';
+
 class AddFeeScreen extends StatefulWidget {
   final String courseId;
   final String studentId;
-  const AddFeeScreen({super.key, required this.courseId, required this.studentId});
+  const AddFeeScreen({
+    super.key,
+    required this.courseId,
+    required this.studentId,
+  });
+
   @override
   State<AddFeeScreen> createState() => _AddFeeScreenState();
 }
@@ -31,75 +38,107 @@ class _AddFeeScreenState extends State<AddFeeScreen> {
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             CustomTextField(
-                controller: nameController,
-                hintText: 'Course Name',
-                prefixIcon: Icons.book),
-            const SizedBox(height: 12),
-            CustomTextField(
-                controller: descController,
-                hintText: 'Description',
-                prefixIcon: Icons.description),
-            const SizedBox(height: 12),
-            CustomTextField(
-                controller: feeController,
-                hintText: 'Fee',
-                prefixIcon: Icons.attach_money,
-                keyboardType: TextInputType.number),
-            const SizedBox(height: 25),
-            isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue.shade800,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15))),
-              onPressed: _saveFee,
-              child: Text("Save Fee",
+              controller: amountController,
+              hintText: 'Enter the money',
+              prefixIcon: Icons.attach_money,
+              hintColor: const Color(0xFF0D47A1),
+              labelColor: const Color(0xFF0D47A1),
+              labelText: 'Fee Amount',
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 25),
+            Row(
+              children: [
+                Expanded(
+                    child: Text(selectedDate == null
+                        ? 'No Date selected'
+                        : 'Due Date: ${selectedDate!.day}-${selectedDate!.month}-${selectedDate!.year}')),
+                IconButton(
+                  onPressed: () async {
+                    final pickDate = await showDatePicker(
+                      context: context,
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime(2100),
+                      initialDate: DateTime.now(),
+                    );
+                    if (pickDate != null) {
+                      setState(() {
+                        selectedDate = pickDate;
+                      });
+                    }
+                  },
+                  icon: const Icon(Icons.calendar_today),
+                ),
+              ],
+            ),
+            SizedBox(height: 40),
+            GestureDetector(
+              onTap: () async {
+                try {
+                  setState(() {
+                    isLoading = true;
+                  });
+
+                  if (amountController.text.isEmpty || selectedDate == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text("Please enter amount and due date")));
+                    return;
+                  }
+                  final feeId = DateTime.now().millisecondsSinceEpoch.toString();
+
+                  await _firestore
+                      .collection('courses')
+                      .doc(widget.courseId)
+                      .collection('studentList')
+                      .doc(widget.studentId)
+                      .collection('feeDetail')
+                      .doc(feeId)
+                      .set({
+                    'amount': double.tryParse(amountController.text) ?? 0,
+                    'status': 'Pending',
+                    'dueDate': selectedDate,
+                    });
+
+
+                  Navigator.pop(context);
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error saving fee: $e")));
+                } finally {
+                  setState(() => isLoading = false);
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                        colors: [Colors.blue, Colors.lightBlueAccent]),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.blue.withOpacity(0.4),
+                          blurRadius: 7,
+                          offset: const Offset(0, 5))
+                    ]),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text(
+                  "Save Fee",
                   style: GoogleFonts.poppins(
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.white)),
-            )
+                      fontSize: 16),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _saveFee() async {
-    if (nameController.text.isEmpty ||
-        descController.text.isEmpty ||
-        feeController.text.isEmpty) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Please fill all fields")));
-      return;
-    }
-
-    setState(() => isLoading = true);
-
-    try {
-      await _firestore
-          .collection('courses')
-          .doc(widget.courseId)
-          .collection('studentList')
-          .doc(widget.studentId)
-          .collection('feeDetail')
-          .add({
-        'name': nameController.text,
-        'description': descController.text,
-        'fee': double.tryParse(feeController.text) ?? 0,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
-    } finally {
-      setState(() => isLoading = false);
-    }
   }
 }

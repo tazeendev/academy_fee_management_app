@@ -1,11 +1,17 @@
 import 'package:firebase_app/accadmy_management_system/view/screen/auth_screens/login_screen/login_screen.dart';
-import 'package:firebase_app/accadmy_management_system/view/screen/nav/nav_bar.dart';
 import 'package:firebase_app/accadmy_management_system/view/widget/form-feilds/text_form_feilds.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  final String courseId;
+  final String studentId;
+
+  const SignupScreen({
+    super.key,
+    required this.courseId,
+    required this.studentId,
+  });
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -40,7 +46,12 @@ class _SignupScreenState extends State<SignupScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const NavScreen()),
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(
+            courseId: widget.courseId,
+            studentId: widget.studentId,
+          ),
+        ),
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -139,7 +150,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           : const Text(
                         "Sign Up",
                         style: TextStyle(
-                            fontSize: 18, color: Colors.white),
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
@@ -153,7 +166,15 @@ class _SignupScreenState extends State<SignupScreen> {
                       const Text("Already have an account? "),
                       TextButton(
                         onPressed: () {
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginScreen()));
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginScreen(
+                                courseId: widget.courseId,
+                                studentId: widget.studentId,
+                              ),
+                            ),
+                          );
                         },
                         child: const Text(
                           "Login",
