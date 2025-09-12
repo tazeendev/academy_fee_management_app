@@ -1,7 +1,10 @@
+import 'package:firebase_app/main.dart';
 import 'package:flutter/material.dart';
+import '../admin_dashboared/courses_screen/add_course/add_course.dart';
 import '../admin_dashboared/courses_screen/course_screen.dart';
 import '../admin_dashboared/fee_details_screen/fee_details_screen.dart';
 import '../admin_dashboared/student_list_screen/student_screen.dart';
+import '../home_screen/home_screen.dart';
 class NavScreen extends StatefulWidget {
   const NavScreen({Key? key});
   @override
@@ -10,9 +13,10 @@ class NavScreen extends StatefulWidget {
 class _NavScreenState extends State<NavScreen> {
   int currentIndex = 0;
   final List<Widget> screens = [
-    CoursesScreen(),
-    StudentsScreen(),
-    FeeScreen(),
+    StudentDashboardScreen(),
+    CreateCourseScreen(),
+    StudentScreen(courseId:,),
+    FeeDetailsScreen(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -24,7 +28,7 @@ class _NavScreenState extends State<NavScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.blue,
+        unselectedItemColor: Color(0xFF0D47A1),
         backgroundColor: Colors.white,
         type: BottomNavigationBarType.fixed,
         onTap: (index) {
@@ -33,6 +37,10 @@ class _NavScreenState extends State<NavScreen> {
           });
         },
         items:  [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.book),
             label: 'Courses',

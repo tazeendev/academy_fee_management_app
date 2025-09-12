@@ -5,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:folding_cell/folding_cell.dart';
 
+import 'add_course/add_course.dart';
+
 class CoursesScreen extends StatefulWidget {
   const CoursesScreen({Key? key}) : super(key: key);
   @override
@@ -14,7 +16,6 @@ class CoursesScreen extends StatefulWidget {
 class _CoursesScreenState extends State<CoursesScreen> {
   final _firestore = FirebaseFirestore.instance;
   final List<GlobalKey<SimpleFoldingCellState>> cellKeys = [];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,17 +29,19 @@ class _CoursesScreenState extends State<CoursesScreen> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blue.shade800,
+        backgroundColor: Color(0xFF0D47A1),
         elevation: 2,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collection('courses').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text("Error loading courses"));
+            return Center(child: Text("Error loading courses"));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator(color: Colors.white));
+            return Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            );
           }
           final coursesId = snapshot.data!.docs;
           if (coursesId.isEmpty) {
@@ -48,14 +51,13 @@ class _CoursesScreenState extends State<CoursesScreen> {
             cellKeys.add(GlobalKey<SimpleFoldingCellState>());
           }
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             itemCount: coursesId.length,
             itemBuilder: (context, index) {
               final doc = coursesId[index];
               final data = doc.data() as Map<String, dynamic>;
-
               return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
+                padding: EdgeInsets.only(bottom: 16),
                 child: SimpleFoldingCell.create(
                   key: cellKeys[index],
                   frontWidget: _buildFrontCard(data, index),
@@ -71,14 +73,18 @@ class _CoursesScreenState extends State<CoursesScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue.shade800,
-        onPressed: showAddDialog,
+        backgroundColor: Color(0xFF0D47A1),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => CreateCourseScreen()),
+          );
+        },
         child: const Icon(Icons.add, size: 28),
       ),
+
     );
   }
-
-  // FRONT CARD
   Widget _buildFrontCard(Map<String, dynamic> data, int index) {
     return GestureDetector(
       onTap: () => cellKeys[index].currentState?.toggleFold(),
@@ -98,7 +104,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
+        padding:  EdgeInsets.all(16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -149,7 +155,9 @@ class _CoursesScreenState extends State<CoursesScreen> {
             Text(
               data['name'] ?? '',
               style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.bold, fontSize: 18),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
             ),
             const SizedBox(height: 10),
             Text(
@@ -172,134 +180,158 @@ class _CoursesScreenState extends State<CoursesScreen> {
     );
   }
 
-  void showAddDialog() {
-    final nameController = TextEditingController();
-    final descController = TextEditingController();
-    final feeController = TextEditingController();
-    bool isLoading = false;
-
-    showGeneralDialog(
-      context: context,
-      barrierLabel: "Add Course",
-      barrierDismissible: true,
-      barrierColor: Colors.black54,
-      transitionDuration: const Duration(milliseconds: 400),
-      pageBuilder: (context, anim1, anim2) => const SizedBox(),
-      transitionBuilder: (context, anim1, anim2, child) {
-        final curvedAnim = Curves.easeInOut.transform(anim1.value);
-        return Transform.translate(
-          offset: Offset(0, (1 - curvedAnim) * 200),
-          child: Opacity(
-            opacity: anim1.value,
-            child: StatefulBuilder(
-              builder: (context, setState) => AlertDialog(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                title: Center(
-                  child: Text("Add New Course",
-                      style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 22,
-                          color: Colors.blue.shade800)),
-                ),
-                content: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      CustomTextField(
-                          controller: nameController,
-                          hintText: 'Course Name',
-                          prefixIcon: Icons.book),
-                      const SizedBox(height: 12),
-                      CustomTextField(
-                          controller: descController,
-                          hintText: 'Description',
-                          prefixIcon: Icons.description),
-                      const SizedBox(height: 12),
-                      CustomTextField(
-                          controller: feeController,
-                          hintText: 'Fee',
-                          prefixIcon: Icons.attach_money,
-                          keyboardType: TextInputType.number),
-                    ],
-                  ),
-                ),
-                actionsAlignment: MainAxisAlignment.center,
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        "Cancel",
-                        style: TextStyle(
-                            color: Colors.red.shade400,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16),
-                      )),
-                  GestureDetector(
-                    onTap: () async {
-                      if (nameController.text.isEmpty ||
-                          descController.text.isEmpty ||
-                          feeController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                            content: Text('Please fill all fields')));
-                        return;
-                      }
-
-                      setState(() => isLoading = true);
-                      final id = DateTime.now().millisecondsSinceEpoch.toString();
-
-                      try {
-                        await _firestore.collection('courses').doc(id).set({
-                          'name': nameController.text,
-                          'description': descController.text,
-                          'fee': double.tryParse(feeController.text) ?? 0,
-                        });
-
-                        setState(() => isLoading = false);
-                        Navigator.pop(context);
-                      } catch (error) {
-                        setState(() => isLoading = false);
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text('Error: $error')));
-                      }
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 700),
-                      height: 50,
-                      width: 260,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              colors: isLoading
-                                  ? [Colors.blue.shade700, Colors.lightBlueAccent]
-                                  : [Colors.lightBlueAccent, Colors.blueAccent]),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.blueAccent.withOpacity(0.5),
-                                blurRadius: 12,
-                                spreadRadius: 1,
-                                offset: const Offset(0, 5))
-                          ],
-                          borderRadius: BorderRadius.circular(15)),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text('Save Course',
-                          style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: Colors.white)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
+  // void showAddDialog() {
+  //   final nameController = TextEditingController();
+  //   final descController = TextEditingController();
+  //   final feeController = TextEditingController();
+  //   bool isLoading = false;
+  //
+  //   showGeneralDialog(
+  //     context: context,
+  //     barrierLabel: "Add Course",
+  //     barrierDismissible: true,
+  //     barrierColor: Colors.black54,
+  //     transitionDuration: const Duration(milliseconds: 400),
+  //     pageBuilder: (context, anim1, anim2) => const SizedBox(),
+  //     transitionBuilder: (context, anim1, anim2, child) {
+  //       final curvedAnim = Curves.easeInOut.transform(anim1.value);
+  //       return Transform.translate(
+  //         offset: Offset(0, (1 - curvedAnim) * 200),
+  //         child: Opacity(
+  //           opacity: anim1.value,
+  //           child: StatefulBuilder(
+  //             builder: (context, setState) => AlertDialog(
+  //               shape: RoundedRectangleBorder(
+  //                 borderRadius: BorderRadius.circular(20),
+  //               ),
+  //               title: Center(
+  //                 child: Text(
+  //                   "Add New Course",
+  //                   style: GoogleFonts.poppins(
+  //                     fontWeight: FontWeight.bold,
+  //                     fontSize: 22,
+  //                     color: Colors.blue.shade800,
+  //                   ),
+  //                 ),
+  //               ),
+  //               content: SingleChildScrollView(
+  //                 child: Column(
+  //                   children: [
+  //                     CustomTextField(
+  //                       controller: nameController,
+  //                       hintText: 'Course Name',
+  //                       prefixIcon: Icons.book,
+  //                     ),
+  //                     const SizedBox(height: 12),
+  //                     CustomTextField(
+  //                       controller: descController,
+  //                       hintText: 'Description',
+  //                       prefixIcon: Icons.description,
+  //                     ),
+  //                     const SizedBox(height: 12),
+  //                     CustomTextField(
+  //                       controller: feeController,
+  //                       hintText: 'Fee',
+  //                       prefixIcon: Icons.attach_money,
+  //                       keyboardType: TextInputType.number,
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //               actionsAlignment: MainAxisAlignment.center,
+  //               actions: [
+  //                 TextButton(
+  //                   onPressed: () => Navigator.pop(context),
+  //                   child: Text(
+  //                     "Cancel",
+  //                     style: TextStyle(
+  //                       color: Colors.red.shade400,
+  //                       fontWeight: FontWeight.bold,
+  //                       fontSize: 16,
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 GestureDetector(
+  //                   onTap: () async {
+  //                     if (nameController.text.isEmpty ||
+  //                         descController.text.isEmpty ||
+  //                         feeController.text.isEmpty) {
+  //                       ScaffoldMessenger.of(context).showSnackBar(
+  //                         const SnackBar(
+  //                           content: Text('Please fill all fields'),
+  //                         ),
+  //                       );
+  //                       return;
+  //                     }
+  //
+  //                     setState(() => isLoading = true);
+  //                     final id = DateTime.now().millisecondsSinceEpoch
+  //                         .toString();
+  //
+  //                     try {
+  //                       await _firestore.collection('courses').doc(id).set({
+  //                         'name': nameController.text,
+  //                         'description': descController.text,
+  //                         'fee': double.tryParse(feeController.text) ?? 0,
+  //                       });
+  //
+  //                       setState(() => isLoading = false);
+  //                       Navigator.pop(context);
+  //                     } catch (error) {
+  //                       setState(() => isLoading = false);
+  //                       ScaffoldMessenger.of(context).showSnackBar(
+  //                         SnackBar(content: Text('Error: $error')),
+  //                       );
+  //                     }
+  //                   },
+  //                   child: AnimatedContainer(
+  //                     duration: const Duration(milliseconds: 700),
+  //                     height: 50,
+  //                     width: 260,
+  //                     alignment: Alignment.center,
+  //                     decoration: BoxDecoration(
+  //                       gradient: LinearGradient(
+  //                         colors: isLoading
+  //                             ? [Colors.blue.shade700, Colors.lightBlueAccent]
+  //                             : [Colors.lightBlueAccent, Colors.blueAccent],
+  //                       ),
+  //                       boxShadow: [
+  //                         BoxShadow(
+  //                           color: Colors.blueAccent.withOpacity(0.5),
+  //                           blurRadius: 12,
+  //                           spreadRadius: 1,
+  //                           offset: const Offset(0, 5),
+  //                         ),
+  //                       ],
+  //                       borderRadius: BorderRadius.circular(15),
+  //                     ),
+  //                     child: isLoading
+  //                         ? const CircularProgressIndicator(color: Colors.white)
+  //                         : Text(
+  //                             'Save Course',
+  //                             style: GoogleFonts.poppins(
+  //                               fontWeight: FontWeight.bold,
+  //                               fontSize: 16,
+  //                               color: Colors.white,
+  //                             ),
+  //                           ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   // ---------------- UPDATE & DELETE ----------------
-  void _showOptions(BuildContext context, String id, Map<String, dynamic> data) {
+  void _showOptions(
+    BuildContext context,
+    String id,
+    Map<String, dynamic> data,
+  ) {
     showGeneralDialog(
       context: context,
       barrierLabel: "Options",
@@ -314,14 +346,17 @@ class _CoursesScreenState extends State<CoursesScreen> {
           child: Opacity(
             opacity: anim1.value,
             child: AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: Center(
                 child: Text(
                   "Choose Action",
                   style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.blue.shade800),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.blue.shade800,
+                  ),
                 ),
               ),
               content: Column(
@@ -340,19 +375,25 @@ class _CoursesScreenState extends State<CoursesScreen> {
                       width: double.infinity,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                          gradient:
-                          const LinearGradient(colors: [Colors.orangeAccent, Colors.deepOrange]),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.deepOrange.withOpacity(0.4),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5))
-                          ]),
+                        gradient: const LinearGradient(
+                          colors: [Colors.orangeAccent, Colors.deepOrange],
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.deepOrange.withOpacity(0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
                       child: Text(
                         "Update",
                         style: GoogleFonts.poppins(
-                            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
@@ -369,18 +410,25 @@ class _CoursesScreenState extends State<CoursesScreen> {
                       width: double.infinity,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: [Colors.redAccent, Colors.red]),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.red.withOpacity(0.4),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5))
-                          ]),
+                        gradient: const LinearGradient(
+                          colors: [Colors.redAccent, Colors.red],
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
                       child: Text(
                         "Delete",
                         style: GoogleFonts.poppins(
-                            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
@@ -393,10 +441,16 @@ class _CoursesScreenState extends State<CoursesScreen> {
     );
   }
 
-  void showUpdateDialog(BuildContext context, String id, Map<String, dynamic> data) {
+  void showUpdateDialog(
+    BuildContext context,
+    String id,
+    Map<String, dynamic> data,
+  ) {
     final nameController = TextEditingController(text: data['name']);
     final descController = TextEditingController(text: data['description']);
-    final feeController = TextEditingController(text: data['fee']?.toString() ?? '0');
+    final feeController = TextEditingController(
+      text: data['fee']?.toString() ?? '0',
+    );
     bool isLoading = false;
 
     showGeneralDialog(
@@ -414,31 +468,56 @@ class _CoursesScreenState extends State<CoursesScreen> {
             opacity: anim1.value,
             child: StatefulBuilder(
               builder: (context, setStateDialog) => AlertDialog(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 title: Center(
                   child: Text(
                     "Update Course",
                     style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Colors.blue.shade800),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.blue.shade800,
+                    ),
                   ),
                 ),
                 content: SingleChildScrollView(
                   child: Column(
                     children: [
-                      CustomTextField(controller: nameController, hintText: "Course Name"),
-                      const SizedBox(height: 10),
-                      CustomTextField(controller: descController, hintText: "Description"),
-                      const SizedBox(height: 10),
                       CustomTextField(
-                          controller: feeController,
-                          hintText: "Fee",
-                          keyboardType: TextInputType.number),
+                        controller: nameController,
+                        hintText: "Course Name",
+                        hintColor: Color(0xFF0D47A1),
+                    labelColor:Color(0xFF0D47A1),
+                        labelText: 'Course',
+                        prefixIcon:Icons.school_outlined,
+                      ),
+                       SizedBox(height: 10),
+                      CustomTextField(
+                        controller: descController,
+                        hintText: "Description",
+                        hintColor: Color(0xFF0D47A1),
+                        labelColor:Color(0xFF0D47A1),
+                        labelText: 'Description',
+                        prefixIcon:Icons.content_copy,
+                      ),
+                       SizedBox(height: 10),
+                      CustomTextField(
+                        controller: feeController,
+                        hintText: "Fee",
+                        keyboardType: TextInputType.number,
+                        hintColor: Color(0xFF0D47A1),
+                        labelColor:Color(0xFF0D47A1),
+                        labelText: 'Fee',
+                        prefixIcon:Icons.feed_outlined,
+                      ),
                     ],
                   ),
                 ),
-                actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                actionsPadding: EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 actions: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
@@ -447,60 +526,80 @@ class _CoursesScreenState extends State<CoursesScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                          gradient:
-                          LinearGradient(colors: [Colors.grey.shade300, Colors.grey.shade500]),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.grey.withOpacity(0.4),
-                                blurRadius: 7,
-                                offset: const Offset(0, 5))
-                          ]),
+                        gradient: LinearGradient(
+                          colors: [Colors.grey.shade300, Colors.grey.shade500],
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.4),
+                            blurRadius: 7,
+                            offset:  Offset(0, 5),
+                              spreadRadius: 2
+                          ),
+                        ],
+                      ),
                       child: Text(
                         "Cancel",
                         style: GoogleFonts.poppins(
-                            color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  SizedBox(height: 10),
                   GestureDetector(
                     onTap: () async {
                       setStateDialog(() => isLoading = true);
                       try {
-                        await FirebaseFirestore.instance.collection('courses').doc(id).update({
-                          'name': nameController.text,
-                          'description': descController.text,
-                          'fee': double.tryParse(feeController.text) ?? data['fee'],
-                        });
+                        await FirebaseFirestore.instance
+                            .collection('courses')
+                            .doc(id)
+                            .update({
+                              'name': nameController.text,
+                              'description': descController.text,
+                              'fee':
+                                  double.tryParse(feeController.text) ??
+                                  data['fee'],
+                            });
                         Navigator.pop(context);
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Error updating course: $e")));
+                          SnackBar(content: Text("Error updating course: $e")),
+                        );
                       } finally {
                         setStateDialog(() => isLoading = false);
                       }
                     },
                     child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      duration:  Duration(milliseconds: 300),
+                      padding: EdgeInsets.symmetric(vertical: 14),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                          gradient: const LinearGradient(colors: [Colors.blue, Colors.lightBlueAccent]),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                                color: Colors.blue.withOpacity(0.4),
-                                blurRadius: 7,
-                                offset: const Offset(0, 5))
-                          ]),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                        "Update",
-                        style: GoogleFonts.poppins(
-                            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                        gradient: const LinearGradient(
+                          colors: [Colors.blue, Colors.lightBlueAccent],
+                        ),
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.withOpacity(0.4),
+                            blurRadius: 7,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
+                      child: isLoading
+                          ?  CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              "Update",
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                     ),
                   ),
                 ],
@@ -527,12 +626,17 @@ class _CoursesScreenState extends State<CoursesScreen> {
           child: Opacity(
             opacity: anim1.value,
             child: AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: Center(
                 child: Text(
                   "Delete Course",
                   style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold, fontSize: 20, color: Colors.red.shade800),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.red.shade800,
+                  ),
                 ),
               ),
               content: Text(
@@ -540,8 +644,14 @@ class _CoursesScreenState extends State<CoursesScreen> {
                 style: GoogleFonts.poppins(fontSize: 16),
                 textAlign: TextAlign.center,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 20,
+              ),
+              actionsPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ),
               actions: [
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
@@ -550,50 +660,67 @@ class _CoursesScreenState extends State<CoursesScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                        gradient:
-                        LinearGradient(colors: [Colors.grey.shade300, Colors.grey.shade500]),
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.grey.withOpacity(0.4),
-                              blurRadius: 7,
-                              offset: const Offset(0, 5))
-                        ]),
+                      gradient: LinearGradient(
+                        colors: [Colors.grey.shade300, Colors.grey.shade500],
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          blurRadius: 7,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
                     child: Text(
                       "Cancel",
                       style: GoogleFonts.poppins(
-                          color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 16),
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
+                SizedBox(height: 10),
                 GestureDetector(
                   onTap: () async {
                     try {
-                      await FirebaseFirestore.instance.collection('courses').doc(id).delete();
+                      await FirebaseFirestore.instance
+                          .collection('courses')
+                          .doc(id)
+                          .delete();
                       Navigator.pop(context);
                     } catch (e) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text("Error deleting course: $e")));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error deleting course: $e")),
+                      );
                     }
                   },
                   child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    duration:  Duration(milliseconds: 300),
+                    padding:  EdgeInsets.symmetric(vertical: 14),
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Colors.redAccent, Colors.red]),
-                        borderRadius: BorderRadius.circular(15),
-                        boxShadow: [
-                          BoxShadow(
-                              color: Colors.red.withOpacity(0.4),
-                              blurRadius: 7,
-                              offset: const Offset(0, 5))
-                        ]),
+                      gradient: const LinearGradient(
+                        colors: [Colors.redAccent, Colors.red],
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withOpacity(0.4),
+                          blurRadius: 7,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
                     child: Text(
                       "Delete",
                       style: GoogleFonts.poppins(
-                          color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ),

@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:folding_cell/folding_cell.dart';
-import 'add_student_screen/add_student_screen.dart';
-class StudentScreen extends StatefulWidget {
+class FeeDetailsScreen extends StatefulWidget {
   final String courseId;
-  const StudentScreen({Key? key, required this.courseId});
+  final String studentId;
+  const FeeDetailsScreen({Key? key, required this.courseId, required this.studentId});
   @override
-  State<StudentScreen> createState() => _StudentScreenState();
+  State<FeeDetailsScreen> createState() => _FeeDetailsScreenState();
 }
-class _StudentScreenState extends State<StudentScreen> {
+class _FeeDetailsScreenState extends State<FeeDetailsScreen> {
   final _firestore = FirebaseFirestore.instance;
   final List<GlobalKey<SimpleFoldingCellState>> cellKeys = [];
   @override
@@ -19,7 +19,7 @@ class _StudentScreenState extends State<StudentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Student List",
+          "Fee Details Screen",
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -30,28 +30,28 @@ class _StudentScreenState extends State<StudentScreen> {
         backgroundColor: Color(0xFF0D47A1),
         elevation: 2,
       ),
-        body:
-        StreamBuilder<QuerySnapshot>(
-        stream: _firestore.collection('courses').doc(widget.courseId).collection('studentList').snapshots(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: _firestore.collection('courses').doc(widget.courseId).
+        collection('studentList').doc(widget.studentId).collection('feeDetail').snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text("Error loading courses"));
+          if (!snapshot.hasError) {
+            return  Center(child: Text("Error loading courses"));
           }
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator(color: Colors.white));
           }
-          final coursesId = snapshot.data!.docs;
-          if (coursesId.isEmpty) {
+          final feeId = snapshot.data!.docs;
+          if (feeId.isEmpty) {
             return Center(child: Text("No Courses Found"));
           }
-          while (cellKeys.length < coursesId.length) {
+          while (cellKeys.length < feeId.length) {
             cellKeys.add(GlobalKey<SimpleFoldingCellState>());
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: coursesId.length,
+            itemCount: feeId.length,
             itemBuilder: (context, index) {
-              final doc = coursesId[index];
+              final doc = feeId[index];
               final data = doc.data() as Map<String, dynamic>;
 
               return Padding(
@@ -72,22 +72,9 @@ class _StudentScreenState extends State<StudentScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue.shade800,
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => AddStudentScreen(courseId: widget.courseId),
-            ),
-          );
-          if (result == true) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("Student Added Successfully")),
-            );
-          }
-        },
+        onPressed: showAddDialog,
         child: const Icon(Icons.add, size: 28),
       ),
-
     );
   }
 
@@ -117,7 +104,7 @@ class _StudentScreenState extends State<StudentScreen> {
           children: [
             Expanded(
               child: Text(
-                data['name'] ?? 'No Student',
+                data['name'] ?? 'Course',
                 style: GoogleFonts.poppins(
                   color: Colors.white,
                   fontSize: 20,
@@ -126,7 +113,7 @@ class _StudentScreenState extends State<StudentScreen> {
               ),
             ),
             Text(
-              data['course']??'Course',
+              "PKR ${data['fee']?.toDouble().toStringAsFixed(2) ?? '0.00'}",
               style: GoogleFonts.poppins(
                 color: Colors.green.shade200,
                 fontWeight: FontWeight.w600,
@@ -218,7 +205,7 @@ class _StudentScreenState extends State<StudentScreen> {
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      showUpdateDialog(context,id,widget.courseId,data);
+                      showUpdateDialog(context, id, data);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
@@ -247,7 +234,7 @@ class _StudentScreenState extends State<StudentScreen> {
                   GestureDetector(
                     onTap: () {
                       Navigator.pop(context);
-                      showDeleteDialog(context, id, data['name'],widget.courseId);
+                      showDeleteDialog(context, id, data['name']);
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
@@ -280,15 +267,12 @@ class _StudentScreenState extends State<StudentScreen> {
     );
   }
 
-  void showUpdateDialog(BuildContext context, String id,String courseId, Map<String, dynamic> data) {
+  void showUpdateDialog(BuildContext context, String id, Map<String, dynamic> data) {
     final nameController = TextEditingController(text: data['name']);
-    final introController = TextEditingController(text: data['intro']);
-    final fatherNameController = TextEditingController(text: data['fname']);
-    final courseController=TextEditingController(text: data['course']);
-    final emailController = TextEditingController(text: data['email']);
-    final phoneController = TextEditingController(text: data['phone']);
-    final addressController = TextEditingController(text: data['address']);
+    final descController = TextEditingController(text: data['description']);
+    final feeController = TextEditingController(text: data['fee']?.toString() ?? '0');
     bool isLoading = false;
+
     showGeneralDialog(
       context: context,
       barrierLabel: "Update",
@@ -317,69 +301,18 @@ class _StudentScreenState extends State<StudentScreen> {
                 content: SingleChildScrollView(
                   child: Column(
                     children: [
+                      CustomTextField(controller: nameController, hintText: "Course Name"),
+                      const SizedBox(height: 10),
+                      CustomTextField(controller: descController, hintText: "Description"),
+                      const SizedBox(height: 10),
                       CustomTextField(
-                          controller: nameController,
-                          hintText: 'Enter Name',
-                          hintColor: Color(0xFF0D47A1),
-                          labelColor:Color(0xFF0D47A1),
-                          labelText: 'Course',
-                          prefixIcon: Icons.account_circle_outlined),
-                      SizedBox(height: 12),
-                      CustomTextField(
-                        controller: fatherNameController,
-                        hintColor: Color(0xFF0D47A1),
-                        labelColor:Color(0xFF0D47A1),
-                        labelText: 'Father Name',
-                        prefixIcon:Icons.person,
-                        hintText: 'Enter Father Name',),
-                      SizedBox(height: 12),
-                      CustomTextField(
-                        controller:introController,
-                        hintText: 'Student Intro',
-                        prefixIcon: Icons.account_box_outlined,
-                        hintColor: Color(0xFF0D47A1),
-                        labelColor:Color(0xFF0D47A1),
-                        labelText: 'Introduction',
-                      ),
-                      CustomTextField(
-                        controller:courseController,
-                        hintText: 'Enter Course',
-                        prefixIcon: Icons.description_outlined,
-                        hintColor: Color(0xFF0D47A1),
-                        labelColor:Color(0xFF0D47A1),
-                        labelText: 'Course',
-                      ),
-                      CustomTextField(
-                        controller:emailController,
-                        hintText: 'Enter Email',
-                        prefixIcon: Icons.email_outlined,
-                        hintColor: Color(0xFF0D47A1),
-                        labelColor:Color(0xFF0D47A1),
-                        labelText: 'Email',
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      CustomTextField(
-                        controller:phoneController,
-                        hintText: 'Phone Number',
-                        prefixIcon: Icons.phone,
-                        hintColor: Color(0xFF0D47A1),
-                        labelColor:Color(0xFF0D47A1),
-                        labelText: 'Phone Number',
-                        keyboardType: TextInputType.number,
-                      ),
-                      CustomTextField(
-                        controller:addressController,
-                        hintText: 'Student Address',
-                        prefixIcon: Icons.location_city,
-                        hintColor: Color(0xFF0D47A1),
-                        labelColor:Color(0xFF0D47A1),
-                        labelText: 'Address',
-                        keyboardType: TextInputType.streetAddress,
-                      ),
+                          controller: feeController,
+                          hintText: "Fee",
+                          keyboardType: TextInputType.number),
                     ],
                   ),
                 ),
-                actionsPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                actionsPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 actions: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
@@ -409,14 +342,10 @@ class _StudentScreenState extends State<StudentScreen> {
                     onTap: () async {
                       setStateDialog(() => isLoading = true);
                       try {
-                        await FirebaseFirestore.instance.collection('courses').doc(courseId).collection('studentList').doc(id).update({
+                        await FirebaseFirestore.instance.collection('courses').doc(id).update({
                           'name': nameController.text,
-                          'fname': fatherNameController.text,
-                          'intro':introController.text,
-                          'course':courseController.text,
-                          'email':emailController.text,
-                          'phone':phoneController.text,
-                          'address':addressController.text,
+                          'description': descController.text,
+                          'fee': double.tryParse(feeController.text) ?? data['fee'],
                         });
                         Navigator.pop(context);
                       } catch (e) {
@@ -457,7 +386,7 @@ class _StudentScreenState extends State<StudentScreen> {
     );
   }
 
-  void showDeleteDialog(BuildContext context, String id,String courseId, String name) {
+  void showDeleteDialog(BuildContext context, String id, String name) {
     showGeneralDialog(
       context: context,
       barrierLabel: "Delete",
@@ -515,7 +444,7 @@ class _StudentScreenState extends State<StudentScreen> {
                 GestureDetector(
                   onTap: () async {
                     try {
-                      await FirebaseFirestore.instance.collection('courses').doc(courseId).collection('studentList').doc(id).delete();
+                      await FirebaseFirestore.instance.collection('courses').doc(id).delete();
                       Navigator.pop(context);
                     } catch (e) {
                       ScaffoldMessenger.of(context)

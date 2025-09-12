@@ -4,7 +4,9 @@ import 'package:firebase_app/accadmy_management_system/view/screen/admin_dashboa
 import 'package:flutter/material.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
-  const StudentDashboardScreen({super.key});
+  final String courseId;
+  final studentId;
+  const StudentDashboardScreen({super.key, required this.courseId, this.studentId});
 
   @override
   State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
@@ -78,9 +80,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.2,
                 children: [
-                  buildCard(Icons.book, 'Syllabus',CoursesScreen()),
-                  buildCard(Icons.calendar_today, 'Attendance',StudentsScreen()),
-                  buildCard(Icons.bar_chart, 'Result',FeeScreen()),
+                  buildCard(Icons.book, 'Syllabus', CoursesScreen()),
+                  buildCard(
+                    Icons.calendar_today,
+                    'Attendance',
+                    StudentScreen(courseId: widget.courseId,),
+                  ),
+                  buildCard(Icons.bar_chart, 'Result', FeeDetailsScreen()),
                 ],
               ),
             ),
@@ -90,10 +96,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget buildCard(IconData icon, String label,Widget navigate) {
+  Widget buildCard(IconData icon, String label, Widget navigate) {
     return GestureDetector(
-      onTap: (){
-        Navigator.push(context,MaterialPageRoute(builder: (context)=>navigate));},
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => navigate),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

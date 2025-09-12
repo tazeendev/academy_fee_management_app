@@ -24,8 +24,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
     //
-      home:StudentDashboardScreen(),
-      //SplashScreen(),
+      home://NavScreen(),
+      //StudentDashboardScreen(),
+      SplashScreen(),
       //NavScreen() ,
     );
 
