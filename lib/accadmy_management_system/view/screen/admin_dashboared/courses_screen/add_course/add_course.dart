@@ -3,21 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 class CreateCourseScreen extends StatefulWidget {
   const CreateCourseScreen({super.key});
-
   @override
   State<CreateCourseScreen> createState() => _CreateCourseScreenState();
 }
-
 class _CreateCourseScreenState extends State<CreateCourseScreen> {
   final _firestore = FirebaseFirestore.instance;
   final nameController = TextEditingController();
   final descController = TextEditingController();
   final feeController = TextEditingController();
   bool isLoading = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
