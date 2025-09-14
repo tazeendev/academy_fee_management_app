@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../auth_screens/login_screen/login_screen.dart';
 class OnboardingScreen extends StatefulWidget {
-  final String courseId;
-  final String studentId;
-  const OnboardingScreen({super.key, required this.courseId, required this.studentId});
+  // final String courseId;
+  // final String studentId;
+  const OnboardingScreen({super.key, });
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
@@ -66,7 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: GestureDetector(
                       onTap: () {
                         Navigator.push(context, MaterialPageRoute(builder:
-                            (context)=>SignupScreen(courseId: widget.courseId,studentId: widget.studentId,)));
+                            (context)=>SignupScreen()));
                         print("Get Started Clicked");
                         // Navigate to dashboard/login here
                       },

@@ -1,7 +1,9 @@
+import 'package:firebase_app/accadmy_management_system/view/screen/auth_screens/signup_screen/signup_screen.dart';
 import 'package:firebase_app/accadmy_management_system/view/screen/starting_screen/starting_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'accadmy_management_system/view/screen/admin_dashboared/institute_form/create_institute_form.dart';
 import 'accadmy_management_system/view/screen/home_screen/home_screen.dart';
 import 'accadmy_management_system/view/screen/nav/nav_bar.dart';
 import 'firebase_options.dart';
@@ -10,12 +12,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp(courseId: '123', studentId: 'hello1',));
+  runApp(MyApp());
 }
 class MyApp extends StatelessWidget {
-  final String courseId;
-  final String studentId;
-  const MyApp({super.key, required this.courseId, required this.studentId});
+  const MyApp({super.key, });
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -25,9 +25,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
     //
-      home://NavScreen(),
+      home:SignupScreen()
+      //CreateInstituteForm(),
+      //NavScreen(),
       //StudentDashboardScreen(),
-      SplashScreen(courseId: courseId,studentId: studentId,),
+     // SplashScreen(courseId: courseId,studentId: studentId,),
       //NavScreen() ,
     );
 

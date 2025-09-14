@@ -4,13 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class SignupScreen extends StatefulWidget {
-  final String courseId;
-  final String studentId;
+  // final String courseId;
+  // final String studentId;
 
   const SignupScreen({
     super.key,
-    required this.courseId,
-    required this.studentId,
   });
 
   @override
@@ -48,8 +46,6 @@ class _SignupScreenState extends State<SignupScreen> {
         context,
         MaterialPageRoute(
           builder: (context) => LoginScreen(
-            courseId: widget.courseId,
-            studentId: widget.studentId,
           ),
         ),
       );
@@ -170,8 +166,6 @@ class _SignupScreenState extends State<SignupScreen> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => LoginScreen(
-                                courseId: widget.courseId,
-                                studentId: widget.studentId,
                               ),
                             ),
                           );

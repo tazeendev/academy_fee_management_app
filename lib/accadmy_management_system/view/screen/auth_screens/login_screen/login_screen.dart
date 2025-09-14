@@ -2,12 +2,13 @@ import 'package:firebase_app/accadmy_management_system/view/screen/nav/nav_bar.d
 import 'package:firebase_app/accadmy_management_system/view/widget/form-feilds/text_form_feilds.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../admin_dashboared/institute_form/create_institute_form.dart';
 import '../signup_screen/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  final String courseId;
-  final String studentId;
-  const LoginScreen({super.key, required this.courseId, required this.studentId});
+  // final String courseId;
+  // final String studentId;
+  const LoginScreen({super.key,});
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -38,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => NavScreen(Id1:widget.studentId , Id2: widget.courseId)),
+        MaterialPageRoute(builder: (context) => CreateInstituteForm()),
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -96,9 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: Icons.email,
                   keyboardType: TextInputType.emailAddress,
                 ),
-                const SizedBox(height: 20),
-
-                // Password Field
+                 SizedBox(height: 20),
                 CustomTextField(
                   controller: passwordController,
                   hintText: 'Enter your password',
@@ -107,9 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: Icons.lock,
                   obscureText: true,
                 ),
-                const SizedBox(height: 30),
-
-                // Login Button
+                SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -141,8 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => SignupScreen(courseId:
-                          widget.courseId,studentId: widget.studentId,)),
+                          MaterialPageRoute(builder: (context) => SignupScreen()),
                         );
                       },
                       child: const Text(

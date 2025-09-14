@@ -1,3 +1,4 @@
+import 'package:firebase_app/accadmy_management_system/view/screen/admin_dashboared/institute_form/create_institute_form.dart';
 import 'package:firebase_app/accadmy_management_system/view/screen/auth_screens/login_screen/login_screen.dart';
 import 'package:firebase_app/accadmy_management_system/view/screen/nav/nav_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,9 +7,7 @@ import 'package:flutter/material.dart';
 import '../onboarding_screen/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
-  final String courseId;
-  final String studentId;
-  const SplashScreen({super.key, required this.courseId, required this.studentId});
+  const SplashScreen({super.key,});
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -22,13 +21,13 @@ class _SplashScreenState extends State<SplashScreen> {
           context,
           MaterialPageRoute(builder: (context)
           =>
-              OnboardingScreen(courseId: widget.courseId,studentId: widget.studentId,)),
+              OnboardingScreen()),
         );
       } else {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) =>
-              NavScreen(Id1: widget.courseId, Id2:widget.studentId)),
+              CreateInstituteForm()),
         );
       }
     });
