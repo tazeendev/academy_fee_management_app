@@ -12,7 +12,6 @@ void main() async {
   );
   runApp(MyApp(courseId: '123', studentId: 'hello1',));
 }
-
 class MyApp extends StatelessWidget {
   final String courseId;
   final String studentId;
