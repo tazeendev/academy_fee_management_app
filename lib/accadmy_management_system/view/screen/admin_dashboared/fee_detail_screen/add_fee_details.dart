@@ -19,10 +19,13 @@ class AddFeeScreen extends StatefulWidget {
 }
 class _AddFeeScreenState extends State<AddFeeScreen> {
   final _firestore = FirebaseFirestore.instance;
-  final amountController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
+  TextEditingController trixIdController=TextEditingController();
+  TextEditingController acountTitleController=TextEditingController();
+  TextEditingController bankNameController=TextEditingController();
   DateTime? selectedDate;
+  bool isApproved=false;
   bool isLoading = false;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,10 +43,41 @@ class _AddFeeScreenState extends State<AddFeeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 25),
             CustomTextField(
               controller: amountController,
               hintText: 'Enter the money',
               prefixIcon: Icons.attach_money,
+              hintColor: const Color(0xFF0D47A1),
+              labelColor: const Color(0xFF0D47A1),
+              labelText: 'Fee Amount',
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 25),
+            CustomTextField(
+              controller: trixIdController,
+              hintText: 'Enter the money',
+              prefixIcon: Icons.attach_money,
+              hintColor: const Color(0xFF0D47A1),
+              labelColor: const Color(0xFF0D47A1),
+              labelText: 'Fee Amount',
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 25),
+            CustomTextField(
+              controller:acountTitleController,
+              hintText: 'Enter the money',
+              prefixIcon: Icons.attach_money,
+              hintColor: const Color(0xFF0D47A1),
+              labelColor: const Color(0xFF0D47A1),
+              labelText: 'Fee Amount',
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 25),
+            CustomTextField(
+              controller: bankNameController,
+              hintText: 'Enter the money',
+              prefixIcon: Icons.food_bank_outlined,
               hintColor: const Color(0xFF0D47A1),
               labelColor: const Color(0xFF0D47A1),
               labelText: 'Fee Amount',
@@ -82,24 +116,30 @@ class _AddFeeScreenState extends State<AddFeeScreen> {
                     isLoading = true;
                   });
 
-                  if (amountController.text.isEmpty || selectedDate == null) {
+                  if (amountController.text.isEmpty ||
+    selectedDate==null || trixIdController.text.isEmpty ||
+    acountTitleController.text.isEmpty ||
+    bankNameController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                         content: Text("Please enter amount and due date")));
                     return;
                   }
                   final feeId = DateTime.now().millisecondsSinceEpoch.toString();
-
                   await _firestore
                       .collection('courses')
                       .doc(widget.courseId)
-                      .collection('studentList')
-                      .doc(widget.studentId)
                       .collection('feeDetail')
                       .doc(feeId)
                       .set({
                     'amount': double.tryParse(amountController.text) ?? 0,
+                    'bank':bankNameController.text,
+                    'trix':trixIdController.text,
+                    'accountTitle':acountTitleController.text,
                     'status': 'Pending',
                     'dueDate': selectedDate,
+                    'userId':widget.studentId,
+                    'courseId': widget.courseId,
+                    'isApproved':false,
                     });
 
 

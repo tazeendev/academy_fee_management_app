@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
 class CreateCourseScreen extends StatefulWidget {
-  const CreateCourseScreen({super.key});
+  const CreateCourseScreen({super.key, });
   @override
   State<CreateCourseScreen> createState() => _CreateCourseScreenState();
 }
@@ -51,9 +51,7 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
               prefixIcon: Icons.attach_money,
               keyboardType: TextInputType.number,
             ),
-            const SizedBox(height: 30),
-
-            // Save Button
+            SizedBox(height: 30),
             GestureDetector(
               onTap: () async {
                 if (nameController.text.isEmpty ||
@@ -66,18 +64,19 @@ class _CreateCourseScreenState extends State<CreateCourseScreen> {
                 }
 
                 setState(() => isLoading = true);
-
-                final id = DateTime.now().millisecondsSinceEpoch.toString();
+                final id=DateTime.now().microsecondsSinceEpoch.toString();
                 try {
                   await _firestore.collection("courses").doc(id).set({
                     "name": nameController.text,
                     "description": descController.text,
                     "fee": double.tryParse(feeController.text) ?? 0,
+                    'id':id,
+                    'instituteId':FirebaseAuth.instance.currentUser!.uid,
                   });
 
                   setState(() => isLoading = false);
 
-                  Navigator.pop(context); // Go back to courses list
+                  Navigator.pop(context);
                 } catch (e) {
                   setState(() => isLoading = false);
                   ScaffoldMessenger.of(context).showSnackBar(

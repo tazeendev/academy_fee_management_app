@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../widget/form-feilds/text_form_feilds.dart';
@@ -12,6 +11,7 @@ class AddStudentScreen extends StatefulWidget {
   @override
   State<AddStudentScreen> createState() => _AddStudentScreenState();
 }
+
 class _AddStudentScreenState extends State<AddStudentScreen> {
   final nameController = TextEditingController();
   final fatherNameController = TextEditingController();
@@ -21,6 +21,8 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   final phoneController = TextEditingController();
   final addressController = TextEditingController();
 
+  bool isContinue = true; // default to true
+  DateTime? completedDate;
   bool isLoading = false;
 
   Future<void> saveStudent() async {
@@ -41,6 +43,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
     try {
       final id = DateTime.now().millisecondsSinceEpoch.toString();
+      final enrollDate = DateTime.now();
 
       await FirebaseFirestore.instance
           .collection('courses')
@@ -55,15 +58,33 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         'email': emailController.text,
         'phone': phoneController.text,
         'address': addressController.text,
-        });
+        'enroll': enrollDate,
+        'isContinue': isContinue,
+        'completedDate': completedDate,
+      });
 
-      Navigator.pop(context, true); // return success
+      Navigator.pop(context, true);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error adding student: $e")),
       );
     } finally {
       setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> pickCompletedDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: completedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        completedDate = picked;
+        isContinue = false; // mark as completed
+      });
     }
   }
 
@@ -81,72 +102,56 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            CustomTextField(
-              controller: nameController,
-              hintText: 'Enter Name',
-              labelText: 'Name',
-              prefixIcon: Icons.account_circle_outlined,
-              hintColor: Color(0xFF0D47A1),
-              labelColor: Color(0xFF0D47A1),
+            // Student details
+            CustomTextField(controller: nameController, hintText: 'Enter Name', labelText: 'Name', prefixIcon: Icons.account_circle_outlined, hintColor: Color(0xFF0D47A1), labelColor: Color(0xFF0D47A1)),
+            SizedBox(height: 12),
+            CustomTextField(controller: fatherNameController, hintText: 'Enter Father Name', labelText: 'Father Name', prefixIcon: Icons.person, hintColor: Color(0xFF0D47A1), labelColor: Color(0xFF0D47A1)),
+            SizedBox(height: 12),
+            CustomTextField(controller: introController, hintText: 'Student Intro', labelText: 'Introduction', prefixIcon: Icons.account_box_outlined, hintColor: Color(0xFF0D47A1), labelColor: Color(0xFF0D47A1)),
+            SizedBox(height: 12),
+            CustomTextField(controller: courseController, hintText: 'Enter Course', labelText: 'Course', prefixIcon: Icons.description_outlined, hintColor: Color(0xFF0D47A1), labelColor: Color(0xFF0D47A1)),
+            SizedBox(height: 12),
+            CustomTextField(controller: emailController, hintText: 'Enter Email', labelText: 'Email', prefixIcon: Icons.email_outlined, keyboardType: TextInputType.emailAddress, hintColor: Color(0xFF0D47A1), labelColor: Color(0xFF0D47A1)),
+            SizedBox(height: 12),
+            CustomTextField(controller: phoneController, hintText: 'Phone Number', labelText: 'Phone Number', prefixIcon: Icons.phone, keyboardType: TextInputType.phone, hintColor: Color(0xFF0D47A1), labelColor: Color(0xFF0D47A1)),
+            SizedBox(height: 12),
+            CustomTextField(controller: addressController, hintText: 'Student Address', labelText: 'Address', prefixIcon: Icons.location_city, keyboardType: TextInputType.streetAddress, hintColor: Color(0xFF0D47A1), labelColor: Color(0xFF0D47A1)),
+            SizedBox(height: 20),
+            // isContinue Switch
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Is Continue?', style: TextStyle(fontSize: 16)),
+                Switch(
+                  value: isContinue,
+                  onChanged: (value) {
+                    setState(() {
+                      isContinue = value;
+                      if (value) completedDate = null;
+                    });
+                  },
+                ),
+              ],
             ),
             SizedBox(height: 12),
-            CustomTextField(
-              controller: fatherNameController,
-              hintText: 'Enter Father Name',
-              labelText: 'Father Name',
-              prefixIcon: Icons.person,
-              hintColor: Color(0xFF0D47A1),
-              labelColor: Color(0xFF0D47A1),
+            // Completed Date picker
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    completedDate != null
+                        ? 'Completed Date: ${completedDate!.toLocal().toString().split(" ")[0]}'
+                        : 'Completed Date: Not set',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.calendar_today),
+                  onPressed: isContinue ? null : pickCompletedDate,
+                ),
+              ],
             ),
-            SizedBox(height: 12),
-            CustomTextField(
-              controller: introController,
-              hintText: 'Student Intro',
-              labelText: 'Introduction',
-              prefixIcon: Icons.account_box_outlined,
-              hintColor: Color(0xFF0D47A1),
-              labelColor: Color(0xFF0D47A1),
-            ),
-            SizedBox(height: 12),
-            CustomTextField(
-              controller: courseController,
-              hintText: 'Enter Course',
-              labelText: 'Course',
-              prefixIcon: Icons.description_outlined,
-              hintColor: Color(0xFF0D47A1),
-              labelColor: Color(0xFF0D47A1),
-            ),
-            SizedBox(height: 12),
-            CustomTextField(
-              controller: emailController,
-              hintText: 'Enter Email',
-              labelText: 'Email',
-              prefixIcon: Icons.email_outlined,
-              keyboardType: TextInputType.emailAddress,
-              hintColor: Color(0xFF0D47A1),
-              labelColor: Color(0xFF0D47A1),
-            ),
-            SizedBox(height: 12),
-            CustomTextField(
-              controller: phoneController,
-              hintText: 'Phone Number',
-              labelText: 'Phone Number',
-              prefixIcon: Icons.phone,
-              keyboardType: TextInputType.phone,
-              hintColor: Color(0xFF0D47A1),
-              labelColor: Color(0xFF0D47A1),
-            ),
-            SizedBox(height: 12),
-            CustomTextField(
-              controller: addressController,
-              hintText: 'Student Address',
-              labelText: 'Address',
-              prefixIcon: Icons.location_city,
-              keyboardType: TextInputType.streetAddress,
-              hintColor: Color(0xFF0D47A1),
-              labelColor: Color(0xFF0D47A1),
-            ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20),
             GestureDetector(
               onTap: isLoading ? null : saveStudent,
               child: AnimatedContainer(
@@ -173,9 +178,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text('Save Student',
                     style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Colors.white)),
+                        fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
               ),
             ),
           ],
